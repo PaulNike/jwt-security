@@ -20,7 +20,7 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parser().setSigningKey(token_secret).parseClaimsJws(token).getBody();
     }
 
@@ -39,7 +39,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 100 * 60 * 60 * 10))  //300000
+                .setExpiration(new Date(System.currentTimeMillis() + 60000))  //300000  60000 + 100 * 60 * 60 * 10
                 .signWith(SignatureAlgorithm.HS256,token_secret).compact();
     }
 

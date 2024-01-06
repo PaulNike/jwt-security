@@ -3,6 +3,8 @@ package com.codigo.apigestionmarket.service.impl;
 import com.codigo.apigestionmarket.contantes.Constants;
 import com.codigo.apigestionmarket.dao.UsuarioDAO;
 import com.codigo.apigestionmarket.entity.Usuarios;
+import com.codigo.apigestionmarket.security.CustomerDetailService;
+import com.codigo.apigestionmarket.security.jwt.JwtUtil;
 import com.codigo.apigestionmarket.service.UsuarioService;
 import com.codigo.apigestionmarket.util.MarketUtils;
 import lombok.extern.java.Log;
@@ -10,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +26,16 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private UsuarioDAO usuarioDAO;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CustomerDetailService customerDetailService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public ResponseEntity<String> singUp(Map<String, String> requestMap) {
         log.info("Ingreso a Registrar Usuario");
@@ -32,7 +47,22 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public ResponseEntity<String> login(Map<String, String> requestMap) {
-        return null;
+        log.info("INGRESO LOGIN");
+        try {
+            Authentication authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(requestMap.get("email"),requestMap.get("password")));
+            if(authentication.isAuthenticated()){
+                if(customerDetailService.getUsuarios().getStatus() == Constants.ACTIVO){
+                    return new ResponseEntity<String>(jwtUtil.generateToken(customerDetailService.getUsuarios().getEmail(),
+                            customerDetailService.getUsuarios().getRole()),HttpStatus.OK);
+                }
+            }else {
+                return new ResponseEntity<String>("Error en Login",HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<String>("Tu Clave esta mal",HttpStatus.BAD_REQUEST);
     }
 
     @Override

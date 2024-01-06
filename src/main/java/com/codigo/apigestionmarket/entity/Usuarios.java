@@ -3,11 +3,9 @@ package com.codigo.apigestionmarket.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
+@NamedQuery(name = "Usuarios.findByEmail", query = "select u from Usuarios u where u.email=:email")
 @Entity
 @Getter
 @Setter
